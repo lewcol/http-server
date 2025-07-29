@@ -13,6 +13,7 @@
 int main(int argc, char **argv) {
     char *port;
     int status;
+    int socketfd;
     struct addrinfo hints;
     struct addrinfo *serverinfo;
 
@@ -43,12 +44,10 @@ int main(int argc, char **argv) {
     }
 
     // Get socket file descriptor
-    if ((status = socket(serverinfo->ai_family, serverinfo->ai_socktype, serverinfo->ai_protocol)) != 0) {
+    if ((socketfd = socket(serverinfo->ai_family, serverinfo->ai_socktype, serverinfo->ai_protocol)) < 0) {
         fprintf(stderr, "Error: %s\n", strerror(errno));
-        exit(status);
+        exit(socketfd);
     }
-
-
 
     // Free addrinfo after use
     freeaddrinfo(serverinfo);
