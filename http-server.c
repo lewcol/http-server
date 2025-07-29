@@ -45,9 +45,21 @@ int main(int argc, char **argv) {
 
     // Get socket file descriptor
     if ((socketfd = socket(serverinfo->ai_family, serverinfo->ai_socktype, serverinfo->ai_protocol)) < 0) {
-        fprintf(stderr, "Error: %s\n", strerror(errno));
+        perror("Error getting socket file descriptor");
+        freeaddrinfo(serverinfo);
         exit(socketfd);
     }
+
+    // Bind to the given port
+    if ((status = bind(socketfd, serverinfo->ai_addr, serverinfo->ai_addrlen)) != 0) {
+        fprintf(stderr, "Error binding to port %s: %s\n", port, strerror(errno));
+        close(socketfd);
+        freeaddrinfo(serverinfo);
+        exit(status);
+    }
+
+    // Close socket for program exit
+    close(socketfd);
 
     // Free addrinfo after use
     freeaddrinfo(serverinfo);
