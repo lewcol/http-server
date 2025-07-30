@@ -63,6 +63,14 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
+    // Listen for incoming connections
+    if ((listen(socketfd, SOMAXCONN)) != 0) {
+        fprintf(stderr, "Error preparing to listen on port %s: %s\n", port, strerror(errno));
+        close(socketfd);
+        freeaddrinfo(serverinfo);
+        exit(EXIT_FAILURE);
+    }
+
     // Close socket for program exit
     close(socketfd);
 
