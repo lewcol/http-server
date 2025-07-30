@@ -18,6 +18,7 @@ int main(int argc, char **argv) {
     struct addrinfo *serverinfo;
 
     // Determine port number
+    // It may be necessary to handle well-known ports differently
     if (argc > 1) {
         if (atoi(argv[1]) > 0) {
             printf("Using Port %s\n", argv[1]);
@@ -40,22 +41,26 @@ int main(int argc, char **argv) {
     // Call getaddrinfo and receive addrinfo
     if ((status = getaddrinfo(NULL, port, &hints, &serverinfo)) != 0) {
         fprintf(stderr, "Error: %s\n", gai_strerror(status));
-        exit(status);
+        exit(EXIT_FAILURE);
     }
 
     // Get socket file descriptor
     if ((socketfd = socket(serverinfo->ai_family, serverinfo->ai_socktype, serverinfo->ai_protocol)) < 0) {
         perror("Error getting socket file descriptor");
         freeaddrinfo(serverinfo);
-        exit(socketfd);
+        exit(EXIT_FAILURE);
     }
 
+    // Reuse port if already in use
+    int y = 1;
+    setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &y, sizeof y);
+
     // Bind to the given port
-    if ((status = bind(socketfd, serverinfo->ai_addr, serverinfo->ai_addrlen)) != 0) {
+    if ((bind(socketfd, serverinfo->ai_addr, serverinfo->ai_addrlen)) != 0) {
         fprintf(stderr, "Error binding to port %s: %s\n", port, strerror(errno));
         close(socketfd);
         freeaddrinfo(serverinfo);
-        exit(status);
+        exit(EXIT_FAILURE);
     }
 
     // Close socket for program exit
@@ -63,4 +68,6 @@ int main(int argc, char **argv) {
 
     // Free addrinfo after use
     freeaddrinfo(serverinfo);
+
+    return 0;
 }
