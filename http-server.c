@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -78,10 +79,10 @@ int main(int argc, char **argv) {
 
     char ip[INET_ADDRSTRLEN];
     inet_ntop(serverinfo->ai_family, serverinfo->ai_addr, ip, INET_ADDRSTRLEN);
-    printf("Listening on %s:%s (max %s)\n", ip, port, MAX_CONN);
+    printf("Listening on %s:%s (max %d)\n", ip, port, MAX_CONN);
 
     // Close socket for program exit
-    printf("Closing socket file descriptor");
+    printf("Closing socket file descriptor\n");
     close(socketfd);
 
     // Free addrinfo after use
