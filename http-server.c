@@ -12,12 +12,23 @@
 #define DEFAULT_PORT "8080"
 #define MAX_CONN SOMAXCONN
 
+void *get_ip_family_sockaddr(struct sockaddr *sa) {
+    if (sa->sa_family==AF_INET) return (struct sockaddr_in*)sa;
+    return (struct sockaddr_in6*)sa;
+}
+
+void print_conn_info(int af, struct sockaddr* sa, char* port, int max_conn){
+    socklen_t ip_len = (af == AF_INET) ? INET_ADDRSTRLEN : INET6_ADDRSTRLEN;
+    char ip[ip_len];
+    inet_ntop(af, get_ip_family_sockaddr((struct sockaddr*)&sa), ip, ip_len);
+    printf("Listening on %s:%s (max %d)\n", ip, port, max_conn);
+}
+
 int main(int argc, char **argv) {
     char *port;
     int status;
     int socketfd;
-    struct addrinfo hints;
-    struct addrinfo *serverinfo;
+    struct addrinfo hints, *serverinfo;
 
     // Determine port number
     // It may be necessary to handle well-known ports differently
@@ -77,9 +88,11 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    char ip[INET_ADDRSTRLEN];
-    inet_ntop(serverinfo->ai_family, serverinfo->ai_addr, ip, INET_ADDRSTRLEN);
-    printf("Listening on %s:%s (max %d)\n", ip, port, MAX_CONN);
+    // Print the IP and port we are listening on
+    print_conn_info(serverinfo->ai_family, serverinfo->ai_addr, port, MAX_CONN);
+
+    // Accept incoming connections
+    
 
     // Close socket for program exit
     printf("Closing socket file descriptor\n");
